@@ -70,19 +70,32 @@ async def crear_uruario(usuario:dict):
     }
 
 
-@app.put("/v1/usuarios/",tags=['CRUD HTTP'],status_code=status.HTTP_200_OK)
-async def actualozar_usuario(id:int,usuario:dict):
+@app.put("/v1/usuarios/{id}", tags=['CRUD HTTP'], status_code=status.HTTP_204_NO_CONTENT)
+async def actualizar_usuario(id: int, usuario: dict):
+
     for usr in usuarios:
-        if usr["id"] == usuario.get("id"):
-            raise HTTPException(
-                status_code=400,
-                detail="El id ya existe"
-            )
-    usuarios.append(usuario)
-    return{
-        "mensaje":"Usuario Agregado",
-        "Usuario":usuario
-    }
+        if usr["id"] == id:
+            usr.update(usuario)  
+            return  
+
+    raise HTTPException(
+        status_code=404,
+        detail="Usuario no encontrado"
+    )
+
+@app.delete("/v1/usuarios/{id}", tags=['CRUD HTTP'], status_code=status.HTTP_204_NO_CONTENT)
+async def eliminar_usuario(id: int):
+
+    for usr in usuarios:
+        if usr["id"] == id:
+            usuarios.remove(usr)  
+            return  
+
+    raise HTTPException(
+        status_code=404,
+        detail="Usuario no encontrado"
+    )
+
 
 
 
