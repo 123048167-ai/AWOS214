@@ -1,6 +1,8 @@
-from fastapi import fastApi, HTTPExeption
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import List
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+import secrets
 
 app = FastAPI(
     title="API Sistema de Tickets de Soporte Tecnico",
@@ -39,6 +41,32 @@ tickets: List[tickets] = []
 def inicio():
     return {"mensaje": "API funcionando correctamente"}
 
+
+
+
+
+# Modelo de validación pydantic
+class usuario_create(BaseModel):
+    id: int = Field(..., gt=0, description="Identificador de usuario")
+    nombre: str = Field(..., min_length=3, max_length=50, json_schema_extra={"example": "soporte"})
+    edad: int = Field(..., ge=1, le=123, description="Edad valida entre 1 - 123")
+
+
+# Seguridad
+security = HTTPBasic()
+
+def verificar_Peticion(credenciales: HTTPBasicCredentials = Depends(security)):
+    userAuth = secrets.compare_digest(credenciales.username, "soporte")
+    passAuth = secrets.compare_digest(credenciales.password, "4321")
+
+    if not (userAuth and passAuth):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales no Autorizadas"
+        )
+    return credenciales.username
+
+
 # Tickets
 
 @app.get("/Tickets")
@@ -63,4 +91,13 @@ def buscar_Tickets(nombre: str):
 
 # consulta de tickets
 
-
+@app.post("/Tickets")
+def registrar_prestamo(prestamo: Ticket):
+    for Ticket in Ticket:
+        if tickets.id == prestamo.ticket_id:
+            if not Ticket.disponible:
+                raise HTTPException(status_code=400, detail="El ticket esta en estado pendiente")
+            Ticket.disponible = False
+            tickets.append(Ticket)
+            return {"mensaje": "Ticket registrado "}
+    raise HTTPException(status_code=404, detail="Ticket no encontrado")
