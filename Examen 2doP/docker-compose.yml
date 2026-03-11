@@ -1,0 +1,5 @@
+services:
+  tickets_api:
+    build: .
+    ports:
+      - "8002:8000"
