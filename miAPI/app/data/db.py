@@ -11,9 +11,21 @@ DATABASE_URL = os.getenv(
 #2. creamos el motor de conexion 
 engine= create_engine(DATABASE_URL)
 
-# creamos gestionador de sesiones
+# 3 creamos gestionador de sesiones
 SessionLocal= sessionmaker(
     autocommit= False,
     autoflush= False,
     bind= engine
 )
+
+#4. base declarativa para modelos
+Base= declarative_base()
+
+#5. funcion para la sesion en cada peticion
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+        
